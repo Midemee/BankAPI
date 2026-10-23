@@ -13,7 +13,6 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-// Slim context: real rules + real service, no datasource, no mocks
 @SpringBootTest(classes = {
         DiscountServiceImpl.class,
         BusinessDiscountRule.class,
@@ -24,8 +23,6 @@ class DiscountServiceImplTest {
 
     @Autowired
     private DiscountService discountService;
-
-    // ---------- Retail rule (18%, above 50,000, from the 4th transaction) ----------
 
     @Test
     void retail_4thTransaction_above50000_gets18Percent() {
@@ -49,11 +46,8 @@ class DiscountServiceImplTest {
 
     @Test
     void discount_isRoundedToTwoDecimalsHalfUp() {
-        // 60000.55 x 18% = 10800.099 -> 10800.10
         assertThat(discount(retail(1), "60000.55", 3)).isEqualByComparingTo("10800.10");
     }
-
-    // ---------- Business rule (27%, above 150,000, from the 4th transaction) ----------
 
     @Test
     void business_4thTransaction_above150000_gets27Percent() {
@@ -75,8 +69,6 @@ class DiscountServiceImplTest {
         // 60,000 is above the retail threshold but below the business one
         assertThat(discount(business(1), "60000", 3)).isEqualByComparingTo("0");
     }
-
-    // ---------- Long-tenure rule (10%, over 4 years, first three transactions) ----------
 
     @Test
     void longTenure_firstTransaction_gets10Percent() {
@@ -115,14 +107,11 @@ class DiscountServiceImplTest {
         assertThat(discount(retail(5), "60000", 1)).isEqualByComparingTo("6000.00");
     }
 
-    // ---------- Decision 4: highest wins, no stacking; and Open/Closed ----------
-
     @Test
     void highestEligibleDiscountWins_noStacking() {
         DiscountService service = new DiscountServiceImpl(List.of(
                 stub(true, "10"), stub(true, "27"), stub(true, "18")));
 
-        // 27% only (not 10 + 27 + 18)
         assertThat(service.calculateDiscount(retail(1), new BigDecimal("100000"), 0))
                 .isEqualByComparingTo("27000.00");
     }
@@ -138,7 +127,6 @@ class DiscountServiceImplTest {
 
     @Test
     void aNewRuleIsJustANewClass_noExistingCodeChanges() {
-        // a "fifth rule" added to the list, nothing else touched
         DiscountService service = new DiscountServiceImpl(List.of(
                 new RetailDiscountRule(), new BusinessDiscountRule(), new LongTenureDiscountRule(),
                 stub(true, "30")));
@@ -154,8 +142,6 @@ class DiscountServiceImplTest {
         assertThat(service.calculateDiscount(retail(1), new BigDecimal("1000"), 0))
                 .isEqualByComparingTo("0");
     }
-
-    // ---------- helpers ----------
 
     private BigDecimal discount(Customer customer, String amount, long alreadyThisMonth) {
         return discountService.calculateDiscount(customer, new BigDecimal(amount), alreadyThisMonth);

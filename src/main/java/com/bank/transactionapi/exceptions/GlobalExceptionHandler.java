@@ -50,7 +50,6 @@ public class GlobalExceptionHandler {
 
     private ResponseEntity<ErrorResponse> build(HttpStatus status, String message,
                                                 List<String> details, HttpServletRequest request) {
-        // hand the message to the audit interceptor
         request.setAttribute(AuditInterceptor.ERROR_MESSAGE_ATTRIBUTE, message);
 
         ErrorResponse body = ErrorResponse.builder()

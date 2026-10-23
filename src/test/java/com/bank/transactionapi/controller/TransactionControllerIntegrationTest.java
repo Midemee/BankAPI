@@ -56,8 +56,6 @@ class TransactionControllerIntegrationTest {
         saveAccount("2222222222", customer);
     }
 
-    // ---------- POST /transfer ----------
-
     @Test
     void transfer_validRequest_returns201() throws Exception {
         mockMvc.perform(post(TRANSFER_URL).contentType(MediaType.APPLICATION_JSON).content("""
@@ -104,8 +102,6 @@ class TransactionControllerIntegrationTest {
                 .andExpect(status().isBadRequest());
     }
 
-    // ---------- POST /airtime ----------
-
     @Test
     void airtime_validRequest_returns201_withNoDiscount() throws Exception {
         mockMvc.perform(post(AIRTIME_URL).contentType(MediaType.APPLICATION_JSON).content("""
@@ -133,8 +129,6 @@ class TransactionControllerIntegrationTest {
                 .andExpect(status().isBadRequest());
     }
 
-    // ---------- GET history ----------
-
     @Test
     void history_returnsTransactionsForTheAccount() throws Exception {
         transferOnce(1000);
@@ -150,8 +144,6 @@ class TransactionControllerIntegrationTest {
         mockMvc.perform(get("/api/v1/accounts/9999999999/transactions"))
                 .andExpect(status().isNotFound());
     }
-
-    // ---------- Audit: every request, successful or not ----------
 
     @Test
     void successfulRequest_isAudited() throws Exception {
@@ -183,8 +175,6 @@ class TransactionControllerIntegrationTest {
         assertThat(entry.getStatusCode()).isEqualTo(400);
         assertThat(entry.isSuccess()).isFalse();
     }
-
-    // ---------- helpers ----------
 
     private void transferOnce(int amount) throws Exception {
         mockMvc.perform(post(TRANSFER_URL).contentType(MediaType.APPLICATION_JSON).content(

@@ -24,8 +24,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SpringBootTest
-@ActiveProfiles("test")   // H2 in-memory database
-@Transactional            // rolls back after every test
+@ActiveProfiles("test")
+@Transactional
 class TransactionServiceIntegrationTest {
 
     private static final String SOURCE = "1111111111";
@@ -35,8 +35,6 @@ class TransactionServiceIntegrationTest {
     @Autowired private TransactionService transactionService;
     @Autowired private CustomerRepository customerRepository;
     @Autowired private AccountRepository accountRepository;
-
-    // =============== The 5 PRD scenarios ===============
 
     @Test
     void retailCustomer_4thTransfer_60000_gets18Percent() {
@@ -65,7 +63,7 @@ class TransactionServiceIntegrationTest {
         givenCustomer(CustomerType.BUSINESS, 1);
         seedTransfers(4);
 
-        TransactionResponse response = transfer(SOURCE, "120000");   // under the 150,000 threshold
+        TransactionResponse response = transfer(SOURCE, "120000");
 
         assertThat(response.getDiscountAmount()).isEqualByComparingTo("0");
     }
@@ -90,8 +88,6 @@ class TransactionServiceIntegrationTest {
         assertThat(response.getFinalAmount()).isEqualByComparingTo("5000");
     }
 
-    // =============== Business decisions (slide 10) ===============
-
     @Test
     void decision1_discountDoesNotApplyOn3rdTransaction_butAppliesOn4th() {
         givenCustomer(CustomerType.RETAIL, 1);
@@ -105,7 +101,7 @@ class TransactionServiceIntegrationTest {
     void decision2_monthlyCountIsPerCustomerAcrossAllAccounts() {
         givenCustomer(CustomerType.RETAIL, 1);
         transfer(SOURCE, "1000");
-        transfer(SECOND_ACCOUNT, "1000");   // different account, same customer
+        transfer(SECOND_ACCOUNT, "1000");
         transfer(SOURCE, "1000");
 
         TransactionResponse response = transfer(SECOND_ACCOUNT, "60000");
@@ -118,7 +114,7 @@ class TransactionServiceIntegrationTest {
         givenCustomer(CustomerType.RETAIL, 1);
         transfer(SOURCE, "1000");
         transfer(SOURCE, "1000");
-        airtime("1000");                    // 3rd transaction of the month
+        airtime("1000");
 
         TransactionResponse response = transfer(SOURCE, "60000");   // 4th overall
 
@@ -147,8 +143,6 @@ class TransactionServiceIntegrationTest {
         assertThat(response.getDiscountAmount()).isEqualByComparingTo("10800.00");
         assertThat(response.getFinalAmount()).isEqualByComparingTo("49200.00");
     }
-
-    // =============== History & errors ===============
 
     @Test
     void history_returnsTransactionsForThatAccountOnly() {
@@ -186,9 +180,6 @@ class TransactionServiceIntegrationTest {
                 .isInstanceOf(InvalidTransactionException.class);
     }
 
-    // =============== Helpers ===============
-
-    /** Saves a customer with three accounts. yearsAsCustomer > 4 makes them "long tenure". */
     private void givenCustomer(CustomerType type, int yearsAsCustomer) {
         Customer customer = new Customer();
         customer.setName("Test Customer");
@@ -208,7 +199,6 @@ class TransactionServiceIntegrationTest {
         accountRepository.save(account);
     }
 
-    /** Makes n small earlier transfers so the next one is transaction n+1 this month. */
     private void seedTransfers(int count) {
         for (int i = 0; i < count; i++) {
             transfer(SOURCE, "1000");
